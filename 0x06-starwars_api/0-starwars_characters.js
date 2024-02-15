@@ -3,20 +3,27 @@
 const request = require('request');
 
 function getCharacterName (url) {
-  request(url, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      console.log(JSON.parse(body).name);
-    }
+  return new Promise((resolve, reject) => {
+    request(url, function (error, response, body) {
+      if (error) {
+        reject(error);
+      } else if (response.statusCode !== 200) {
+        reject(new Error('Invalid status code: ' + response.statusCode));
+      } else {
+        resolve(JSON.parse(body).name);
+      }
+    });
   });
 }
 
-function getCharacters (movieId) {
+async function getCharacters (movieId) {
   const url = `https://swapi.dev/api/films/${movieId}/`;
-  request(url, function (error, response, body) {
+  request(url, async function (error, response, body) {
     if (!error && response.statusCode === 200) {
       const characters = JSON.parse(body).characters;
       for (let i = 0; i < characters.length; i++) {
-        getCharacterName(characters[i]);
+        const name = await getCharacterName(characters[i]);
+        console.log(name);
       }
     }
   });
